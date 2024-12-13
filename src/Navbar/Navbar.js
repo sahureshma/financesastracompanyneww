@@ -3,6 +3,7 @@ import { FaBell, FaUserCircle, FaSearch, FaChevronDown, FaUser } from "react-ico
 import { FaCircleQuestion } from "react-icons/fa6";
 import "./Navbar.css";
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie'
 
 import logo from "../assest/Logo design (1).png";
 import { Link } from "react-router-dom";
@@ -15,14 +16,20 @@ const Navbar = () => {
   const [mutualFundsDropdownOpen, setMutualFundsDropdownOpen] = useState(false);
   const [footerMutualFundsDropdownOpen, setFooterMutualFundsDropdownOpen] = useState(false);
   const [footerPortfolioDropdownOpen, setFooterPortfolioDropdownOpen] = useState(false);
+  const navigate = useNavigate();
   
-const footerPortfolioDropdownRef = useRef(null);
+  const footerPortfolioDropdownRef = useRef(null);
   const footerMutualFundsDropdownRef = useRef(null);
   const stockDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
   const footerStockDropdownRef = useRef(null);
   const portfolioDropdownRef = useRef(null);
   const mutualFundsDropdownRef = useRef(null);
+
+  const onLogOut=()=>{
+    Cookies.remove('jwtToken')
+    navigate('/')
+  }
 
   const toggleStockDropdown = () => {
     setStockDropdownOpen(!stockDropdownOpen);
@@ -169,8 +176,8 @@ const footerPortfolioDropdownRef = useRef(null);
       Help Center</Link>
       </div>
       <div className="dropdown-item">
-      <Link to="/"> <FaUserCircle className="dropdown-icon" />
-      Logout</Link>
+      <div onClick={onLogOut}> <FaUserCircle className="dropdown-icon" />
+      Logout</div>
       </div>
     </div>
   );
@@ -238,7 +245,7 @@ const footerPortfolioDropdownRef = useRef(null);
    
   );
  
-    const navigate = useNavigate();
+    
 
   return (
     <>

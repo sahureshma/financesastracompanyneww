@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
 import { Button } from "@mui/material";
@@ -6,6 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaLinkedin } from "react-icons/fa";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import logo from "../assest/Logo design (1).png";
+import Cookies from 'js-cookie'
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,16 @@ function Register() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(()=>{
+      const checkUserAuthentication=()=>{
+          const cookiejwtToken= Cookies.get("jwtToken")
+          if (cookiejwtToken !== undefined){
+              navigate('/home')
+          }
+      }
+      checkUserAuthentication()
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +47,7 @@ function Register() {
     return passwordPattern.test(password);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let isValid = true;
 
@@ -57,15 +68,32 @@ function Register() {
     }
 
     if (isValid) {
-      const existingUserData = JSON.parse(localStorage.getItem(formData.email));
+      /*const existingUserData = JSON.parse(localStorage.getItem(formData.email));
       if (existingUserData) {
         alert("User already registered with this email.");
       } else {
         localStorage.setItem(formData.email, JSON.stringify(formData));
+        
+      }*/
+     const url= 'https://financeshastra-backend-i18y.onrender.com/api/register'
+     const options={
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      }
+      const response= await fetch(url, options)
+      if (!response.ok){
+        alert("User already registered with this email.");
+        setFormData({name: "", email: '', password: ''})
+      }else{
         alert("Sign-Up Successful");
         navigate("/");
+        setFormData({name: "", email: '', password: ''})
       }
     }
+    
   };
 
   const handleSignInClick = () => {

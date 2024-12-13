@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { FcGoogle } from "react-icons/fc";
@@ -6,6 +6,7 @@ import { FaLinkedin } from "react-icons/fa";
 import { Button } from "@mui/material";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // Eye icons
 import logo from "./../assest/Logo design (1).png";
+import Cookies from 'js-cookie'
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,17 @@ function Login() {
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const navigate = useNavigate();
+  const [loginError, setLoginError]= useState('')
+
+  useEffect(()=>{
+    const checkUserAuthentication=()=>{
+        const cookiejwtToken= Cookies.get("jwtToken")
+        if (cookiejwtToken !== undefined){
+            navigate('/home')
+        }
+    }
+    checkUserAuthentication()
+  }, [])
 
   const validateEmail = (email) => {
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -28,7 +40,7 @@ function Login() {
     return passwordPattern.test(password);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let isValid = true;
 
@@ -47,17 +59,39 @@ function Login() {
     }
 
     if (isValid && !isForgotPassword) {
-      const userRegistrationData = JSON.parse(localStorage.getItem(email));
+      /*const userRegistrationData = JSON.parse(localStorage.getItem(email));
       if (userRegistrationData && userRegistrationData.email === email) {
         if (userRegistrationData.password === password) {
-          alert("Login Successful");
-          navigate("/home");
+          
         } else {
           setPasswordError("Incorrect password.");
         }
       } else {
         setEmailError("Email not found. Please register.");
-      }
+      }*/
+     const userDetails={
+        "email": email,
+        "password": password
+     }
+     const options= {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userDetails)
+     }
+     const response= await fetch('https://financeshastra-backend-i18y.onrender.com/api/signin', options)
+     if (!response.ok){
+        const {message}= await response.json()
+        setLoginError(message)
+     }else{
+        const {jwtToken}= await response.json()
+        Cookies.set("jwtToken", jwtToken)
+        alert("Login Successful");
+        navigate("/home");
+        setEmail('')
+        setPassword('')
+     }
     }
   };
 
@@ -195,6 +229,7 @@ function Login() {
   </a>
 </div>
               <button type="submit" className="sign-in-btn">Sign In</button>
+              <p className="error-text">{loginError}</p>
             </form>
           )}
 
